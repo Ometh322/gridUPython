@@ -13,4 +13,11 @@ Examples:
 
 
 def remove_duplicated_words(line: str) -> str:
-    ...
+    tmp_set = set()
+    result_str = str()
+    for item in line.split(' '):
+        if item not in tmp_set:
+            tmp_set.add(item)
+            result_str += item + ' '
+    return result_str[:-1]
+
