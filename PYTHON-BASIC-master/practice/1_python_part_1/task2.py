@@ -9,17 +9,14 @@ Examples:
     >>> set_to_dict({'a': 5})
     {'a': 5}
 """
-from typing import Dict
+from typing import Dict, Union
 
 
 def set_to_dict(dict_to_update: Dict[str, int], **items_to_set) -> Dict:
-    input_items = dict(items_to_set)
+    input_items: Dict[str, int] = dict(items_to_set)
     for input_key, input_value in input_items.items():
-        if len(dict_to_update.items()) > 0:
-            for k, v in dict_to_update.items():
-                if input_key == k and input_value > v:
-                    dict_to_update[k] = input_value
-        else:
+        cur_value: Union[str, int] = dict_to_update.get(input_key, 'no_key')
+        if cur_value == 'no_key' or cur_value < input_value:
             dict_to_update[input_key] = input_value
     return dict_to_update
 
