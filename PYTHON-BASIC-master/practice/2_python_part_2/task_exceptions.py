@@ -32,6 +32,6 @@ def division(x: int, y: int) -> Union[None, int]:
         print('Division finished')
         raise DivisionByOneException
     else:
-        print
+        print('Division finished')
         return x // y
 

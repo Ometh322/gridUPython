@@ -31,6 +31,6 @@ def read_numbers(n: int) -> str:
 
     if counter > 0:
         x: float = round(s / counter, 2)
-        return 'Avg: ' + str(x)
+        return f'Avg: {x}'
     else:
         return 'No numbers entered'
