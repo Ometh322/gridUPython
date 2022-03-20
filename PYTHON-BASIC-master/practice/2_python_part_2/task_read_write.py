@@ -39,9 +39,10 @@ def read_write_files(dirpath: str) -> None:
         filepath: str = os.path.join(dirpath, filename[0])
         with open(filepath, 'r') as f:
             content.append(*f.readlines())
-    with open('result.txt', 'w') as f:
+    with open(os.path.join(dirpath, 'result.txt'), 'w') as f:
         f.write(', '.join(content))
 
 
-path: str = os.environ.get('path')
-read_write_files(path)
+if __name__ == "__main_":
+    path: str = os.environ.get('path')
+    read_write_files(path)

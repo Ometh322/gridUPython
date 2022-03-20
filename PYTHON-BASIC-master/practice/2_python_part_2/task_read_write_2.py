@@ -43,5 +43,6 @@ def write_second_file(content: List[str]) -> None:
         f.write(','.join(reversed_content))
 
 
-content_list: List[str] = write_first_file(5)
-write_second_file(content_list)
+if __name__ == '__main__':
+    content_list: List[str] = write_first_file(5)
+    write_second_file(content_list)
