@@ -30,8 +30,7 @@ def parsing(listdir: List[str]) -> List[Tuple[str, int]]:
     return tuple_list
 
 
-def read_write_files() -> None:
-    dirpath: str = os.environ.get('path')
+def read_write_files(dirpath: str) -> None:
     content: List[str] = list()
     listdir: List[str] = os.listdir(dirpath)
     tuple_list: List[Tuple[str, int]] = parsing(listdir)
@@ -44,4 +43,5 @@ def read_write_files() -> None:
         f.write(', '.join(content))
 
 
-read_write_files()
+path: str = os.environ.get('path')
+read_write_files(path)
