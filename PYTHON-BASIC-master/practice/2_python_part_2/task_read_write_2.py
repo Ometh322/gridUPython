@@ -26,8 +26,7 @@ def generate_words(n=20):
     return words
 
 
-def write_first_file(words_number: int) -> List[str]:
-    dirpath: str = os.environ.get('path')
+def write_first_file(dirpath: str, words_number: int) -> List[str]:
     content: List[str] = generate_words(words_number)
     filepath: str = os.path.join(dirpath, 'file1.txt')
     with open(filepath, encoding='UTF-8', mode='w') as f:
@@ -35,14 +34,14 @@ def write_first_file(words_number: int) -> List[str]:
     return content
 
 
-def write_second_file(content: List[str]) -> None:
+def write_second_file(dirpath: str, content: List[str]) -> None:
     reversed_content: List[str] = content[::-1]
-    dirpath: str = os.environ.get('path')
     filepath: str = os.path.join(dirpath, 'file2.txt')
     with open(filepath, encoding='cp1252', mode='w') as f:
         f.write(','.join(reversed_content))
 
 
 if __name__ == '__main__':
-    content_list: List[str] = write_first_file(5)
-    write_second_file(content_list)
+    dirpath: str = os.environ.get('path')
+    content_list: List[str] = write_first_file(dirpath, 5)
+    write_second_file(dirpath, content_list)
