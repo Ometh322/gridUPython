@@ -27,17 +27,38 @@ PEP8 comply strictly.
 """
 import datetime
 
-
-class Teacher:
-    ...
-
-
-class Student:
-    ...
+from typing import List, Union
 
 
 class Homework:
-    ...
+    def __init__(self, text: str, days: int):
+        self.text: str = text
+        self.created: datetime.datetime = datetime.datetime.now()
+        self.deadline: datetime.timedelta = datetime.timedelta(days=days)
+
+    def is_active(self) -> bool:
+        return datetime.datetime.now() < (self.created + self.deadline)
+
+class Teacher:
+    def __init__(self, last_name: str, first_name: str):
+        self.last_name: str = last_name
+        self.first_name: str = first_name
+
+    @staticmethod
+    def create_homework(text: str, days: int) -> Homework:
+        return Homework(text, days)
+
+
+class Student:
+    def __init__(self, last_name: str, first_name: str):
+        self.last_name: str = last_name
+        self.first_name: str = first_name
+
+    def do_homework(self, home_work: Homework) -> Union[Homework, None]:
+        if home_work.is_active():
+            return home_work
+        print('You are late')
+        return None
 
 
 if __name__ == '__main__':
@@ -58,3 +79,4 @@ if __name__ == '__main__':
 
     student.do_homework(oop_homework)
     student.do_homework(expired_homework)  # You are late
+

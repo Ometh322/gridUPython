@@ -8,16 +8,29 @@ If it doesn't exists, return: "No numbers entered"
 Examples:
     user enters: 1, 2, hello, 2, world
     >>> read_numbers(5)
-    Avg: 1.67
-    ------------
+    'Avg: 1.67'
+
     user enters: hello, world, foo, bar, baz
     >>> read_numbers(5)
-    No numbers entered
+    'No numbers entered'
 
 """
 
 
 def read_numbers(n: int) -> str:
-    ...
+    s: int = 0
+    counter: int = 0
+    for i in range(n):
+        try:
+            cur = input()
+            if int(cur):
+                s += int(cur)
+                counter += 1
+        except ValueError:
+            pass
 
-
+    if counter > 0:
+        x: float = round(s / counter, 2)
+        return f'Avg: {x}'
+    else:
+        return 'No numbers entered'

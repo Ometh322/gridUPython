@@ -14,8 +14,24 @@ In all cases it should print "Division finished"
     1
     Division finished
 """
-import typing
+from typing import Union
 
 
-def division(x: int, y: int) -> typing.Union[None, int]:
-    ...
+class DivisionByOneException(Exception):
+    def __init__(self, message="Deletion on 1 get the same result"):
+        self.message = message
+        super().__init__(self.message)
+
+
+def division(x: int, y: int) -> Union[None, int]:
+    if y == 0:
+        print('Division by 0')
+        print('Division finished')
+        return None
+    elif y == 1:
+        print('Division finished')
+        raise DivisionByOneException
+    else:
+        print('Division finished')
+        return x // y
+
