@@ -9,8 +9,8 @@ import math
 
 
 class OperationNotFoundException(Exception):
-    def __init__(self, message='Operation not found'):
-        self.message = message
+    def __init__(self, message):
+        self.message = message + ' function not found in math module'
         super().__init__(self.message)
 
 
@@ -19,7 +19,7 @@ def math_calculate(function: str, *args):
         result = getattr(math, function)(*args)
         return result
     except AttributeError:
-        raise OperationNotFoundException
+        raise OperationNotFoundException(function)
 
 
 """
