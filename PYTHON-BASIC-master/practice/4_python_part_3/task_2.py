@@ -12,8 +12,28 @@ Examples:
 import math
 
 
+class OperationNotFoundException(Exception):
+    def __init__(self, message='Operation not found'):
+        self.message = message
+        super().__init__(self.message)
+
+
 def math_calculate(function: str, *args):
-    ...
+    func_dict: dict = {
+        "log": math.log,
+        "ceil": math.ceil,
+        "pow": math.pow,
+        "acos": math.acos,
+        "acosh": math.acosh,
+        "asin": math.asin,
+        "asinh": math.asinh,
+        "sin": math.sin,
+        "cos": math.cos,
+        "tan": math.tan,
+        "atan2": math.atan2,
+
+    }
+    return func_dict[function](*args)
 
 
 """
