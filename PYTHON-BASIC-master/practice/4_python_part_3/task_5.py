@@ -1,15 +1,18 @@
 """
 Write a function that makes a request to some url
 using urllib. Return status code and decoded response data in utf-8
-Examples:
-     >>> make_request('https://www.google.com')
-     200, 'response data'
+
 """
 from typing import Tuple
+from urllib.request import urlopen
+from urllib import response
 
 
 def make_request(url: str) -> Tuple[int, str]:
-    ...
+    resp: response = urlopen(url)
+    response_code: int = int(resp.getcode())
+    response_data: str = resp.read().decode('utf-8')
+    return response_code, response_data
 
 
 """
