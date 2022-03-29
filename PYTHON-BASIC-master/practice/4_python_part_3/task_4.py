@@ -15,15 +15,33 @@ Example:
 """
 
 import argparse
+from faker import Faker
+from typing import Dict, List
 
 
 def print_name_address(args: argparse.Namespace) -> None:
-    ...
+    fake = Faker()
+    ans = vars(args)
+    number: int = ans['NUMBER']
+    for _ in range(number):
+        name_address_dict: Dict[str: str] = dict()
+        for item in ans['FIELD-PROVIDER']:
+            key_value: List[str] = item.split('=')
+            key: str = key_value[0]
+            value: str = key_value[1]
+            name_address_dict[key] = getattr(fake, value)()
+        print(name_address_dict)
 
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('NUMBER', type=int, help='positive number of generated instances')
+    parser.add_argument('FIELD-PROVIDER', nargs='+', metavar='KEY=VALUE')
+    print_name_address(parser.parse_args())
 
 """
 Write test for print_name_address function
-Use Mock for mocking args argument https://docs.python.org/3/library/unittest.mock.html#unittest.mock.Mock
+Use Mock for mocking args argument a
 Example:
     >>> m = Mock()
     >>> m.method.return_value = 123
