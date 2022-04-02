@@ -71,11 +71,11 @@ def weather(path: str, date: str = '2021-09-25', country: str = 'Spain') -> None
     windiest_place: str = ''
 
     for city, weather_info in cities.items():
-        if weather_info[2]['min_temp'] == total_min_temp:
+        if weather_info[0]['mean_temp'] == min(total_mean_temp_list):
             coldest_place = city
-        if weather_info[4]['max_temp'] == total_max_temp:
+        if weather_info[0]['mean_temp'] == max(total_mean_temp_list):
             warmest_place = city
-        if weather_info[5]['max_wind_speed'] == total_max_wind_speed:
+        if weather_info[1]['mean_wind_speed'] == max(total_mean_wind_speed_list):
             windiest_place = city
 
     root = ET.Element('weather')
