@@ -16,6 +16,60 @@ def prettify(file_path: str) -> None:
         file.write(pretty_content)
 
 
+def write_xml(total_mean_temp: Decimal, total_mean_wind_speed: Decimal,
+              coldest_place: str, warmest_place: str, windiest_place: str,
+              cities: Dict[str, List[Dict[str, Decimal]]],
+              country: str = 'Spain', date: str = '2021-09-25') -> None:
+    root = ET.Element('weather')
+    root.set('country', country)
+    root.set('date', date)
+    summary = ET.SubElement(root, 'summary')
+    summary.set('mean_temp', str(total_mean_temp))
+    summary.set('mean_wind_speed', str(total_mean_wind_speed))
+    summary.set('coldest_place', coldest_place)
+    summary.set('warmest_place', warmest_place)
+    summary.set('windiest_place', windiest_place)
+    cities_xml = ET.SubElement(root, 'cities')
+    for city_name, weather_info in cities.items():
+        city_xml = ET.SubElement(cities_xml, city_name)
+        city_xml.set('mean_temp', str(weather_info[0]['mean_temp']))
+        city_xml.set('mean_wind_speed', str(weather_info[1]['mean_wind_speed']))
+        city_xml.set('min_temp', str(weather_info[2]['min_temp']))
+        city_xml.set('min_wind_speed', str(weather_info[3]['min_wind_speed']))
+        city_xml.set('max_temp', str(weather_info[4]['max_temp']))
+        city_xml.set('max_wind_speed', str(weather_info[5]['max_wind_speed']))
+
+    tree = ET.ElementTree(root)
+    tree.write('result.xml')
+    prettify('result.xml')
+
+
+def calculate_fields(total_mean_temp_list: List[Decimal],
+                     total_mean_wind_speed_list: List[Decimal],
+                     cities: Dict[str, List[Dict[str, Decimal]]],
+                     country: str = 'Spain',
+                     date: str = '2021-09-25') -> None:
+
+    total_mean_temp: Decimal = Decimal(sum(total_mean_temp_list) / len(total_mean_temp_list)) \
+        .quantize(Decimal('1.00'))
+    total_mean_wind_speed: Decimal = Decimal(sum(total_mean_wind_speed_list) / len(total_mean_wind_speed_list)) \
+        .quantize(Decimal('1.00'))
+
+    coldest_place: str = ''
+    warmest_place: str = ''
+    windiest_place: str = ''
+
+    for city, weather_info in cities.items():
+        if weather_info[0]['mean_temp'] == min(total_mean_temp_list):
+            coldest_place = city
+        if weather_info[0]['mean_temp'] == max(total_mean_temp_list):
+            warmest_place = city
+        if weather_info[1]['mean_wind_speed'] == max(total_mean_wind_speed_list):
+            windiest_place = city
+    write_xml(total_mean_temp, total_mean_wind_speed, coldest_place, warmest_place, windiest_place,
+              cities, country, date)
+
+
 def weather(path: str, date: str = '2021-09-25', country: str = 'Spain') -> None:
     cities: Dict[str, List[Dict[str, Decimal]]] = dict()
     total_mean_temp_list: List[Decimal] = list()
@@ -55,51 +109,7 @@ def weather(path: str, date: str = '2021-09-25', country: str = 'Spain') -> None
         cities[city].append({'max_temp': max_temp})
         cities[city].append({'max_wind_speed': max_wind_speed})
 
-    total_mean_temp: Decimal = Decimal(sum(total_mean_temp_list) / len(total_mean_temp_list))\
-        .quantize(Decimal('1.00'))
-    total_mean_wind_speed: Decimal = Decimal(sum(total_mean_wind_speed_list) / len(total_mean_wind_speed_list)) \
-        .quantize(Decimal('1.00'))
-    total_min_temp: Decimal = Decimal(min(total_min_temp_list)) \
-        .quantize(Decimal('1.00'))
-    total_max_temp: Decimal = Decimal(max(total_max_temp_list)) \
-        .quantize(Decimal('1.00'))
-    total_max_wind_speed: Decimal = Decimal(max(total_max_wind_speed_list)) \
-        .quantize(Decimal('1.00'))
-
-    coldest_place: str = ''
-    warmest_place: str = ''
-    windiest_place: str = ''
-
-    for city, weather_info in cities.items():
-        if weather_info[0]['mean_temp'] == min(total_mean_temp_list):
-            coldest_place = city
-        if weather_info[0]['mean_temp'] == max(total_mean_temp_list):
-            warmest_place = city
-        if weather_info[1]['mean_wind_speed'] == max(total_mean_wind_speed_list):
-            windiest_place = city
-
-    root = ET.Element('weather')
-    root.set('country', country)
-    root.set('date', date)
-    summary = ET.SubElement(root, 'summary')
-    summary.set('mean_temp', str(total_mean_temp))
-    summary.set('mean_wind_speed', str(total_mean_wind_speed))
-    summary.set('coldest_place', coldest_place)
-    summary.set('warmest_place', warmest_place)
-    summary.set('windiest_place', windiest_place)
-    cities_xml = ET.SubElement(root, 'cities')
-    for city_name, weather_info in cities.items():
-        city_xml = ET.SubElement(cities_xml, city_name)
-        city_xml.set('mean_temp', str(weather_info[0]['mean_temp']))
-        city_xml.set('mean_wind_speed', str(weather_info[1]['mean_wind_speed']))
-        city_xml.set('min_temp', str(weather_info[2]['min_temp']))
-        city_xml.set('min_wind_speed', str(weather_info[3]['min_wind_speed']))
-        city_xml.set('max_temp', str(weather_info[4]['max_temp']))
-        city_xml.set('max_wind_speed', str(weather_info[5]['max_wind_speed']))
-
-    tree = ET.ElementTree(root)
-    tree.write('result.xml')
-    prettify('result.xml')
+    calculate_fields(total_mean_temp_list, total_mean_wind_speed_list, cities)
 
 
 path_dir: str = os.environ.get('path')
