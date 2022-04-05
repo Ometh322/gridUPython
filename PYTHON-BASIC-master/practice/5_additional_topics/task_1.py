@@ -17,12 +17,10 @@ def prettify(file_path: str) -> None:
 
 
 def write_xml(total_mean_temp: Decimal, total_mean_wind_speed: Decimal,
-              coldest_place: str, warmest_place: str, windiest_place: str,
-              cities: Dict[str, List[Dict[str, Decimal]]],
-              country: str = 'Spain', date: str = '2021-09-25') -> None:
+              coldest_place: str, warmest_place: str, windiest_place: str, country_weather) -> None:
     root = ET.Element('weather')
-    root.set('country', country)
-    root.set('date', date)
+    root.set('country', country_weather.country)
+    root.set('date', country_weather.date)
     summary = ET.SubElement(root, 'summary')
     summary.set('mean_temp', str(total_mean_temp))
     summary.set('mean_wind_speed', str(total_mean_wind_speed))
@@ -30,7 +28,7 @@ def write_xml(total_mean_temp: Decimal, total_mean_wind_speed: Decimal,
     summary.set('warmest_place', warmest_place)
     summary.set('windiest_place', windiest_place)
     cities_xml = ET.SubElement(root, 'cities')
-    for city_name, weather_info in cities.items():
+    for city_name, weather_info in country_weather.cities.items():
         city_xml = ET.SubElement(cities_xml, city_name)
         city_xml.set('mean_temp', str(weather_info[0]['mean_temp']))
         city_xml.set('mean_wind_speed', str(weather_info[1]['mean_wind_speed']))
@@ -44,39 +42,32 @@ def write_xml(total_mean_temp: Decimal, total_mean_wind_speed: Decimal,
     prettify('result.xml')
 
 
-def calculate_fields(total_mean_temp_list: List[Decimal],
-                     total_mean_wind_speed_list: List[Decimal],
-                     cities: Dict[str, List[Dict[str, Decimal]]],
-                     country: str = 'Spain',
-                     date: str = '2021-09-25') -> None:
+def calculate_fields(county_weather) -> None:
 
-    total_mean_temp: Decimal = Decimal(sum(total_mean_temp_list) / len(total_mean_temp_list)) \
+    total_mean_temp: Decimal = \
+        Decimal(sum(county_weather.total_mean_temp_list) / len(county_weather.total_mean_temp_list)) \
         .quantize(Decimal('1.00'))
-    total_mean_wind_speed: Decimal = Decimal(sum(total_mean_wind_speed_list) / len(total_mean_wind_speed_list)) \
+    total_mean_wind_speed: Decimal = \
+        Decimal(sum(county_weather.total_mean_wind_speed_list) / len(county_weather.total_mean_wind_speed_list)) \
         .quantize(Decimal('1.00'))
 
     coldest_place: str = ''
     warmest_place: str = ''
     windiest_place: str = ''
 
-    for city, weather_info in cities.items():
-        if weather_info[0]['mean_temp'] == min(total_mean_temp_list):
+    for city, weather_info in county_weather.cities.items():
+        if weather_info[0]['mean_temp'] == min(county_weather.total_mean_temp_list):
             coldest_place = city
-        if weather_info[0]['mean_temp'] == max(total_mean_temp_list):
+        if weather_info[0]['mean_temp'] == max(county_weather.total_mean_temp_list):
             warmest_place = city
-        if weather_info[1]['mean_wind_speed'] == max(total_mean_wind_speed_list):
+        if weather_info[1]['mean_wind_speed'] == max(county_weather.total_mean_wind_speed_list):
             windiest_place = city
     write_xml(total_mean_temp, total_mean_wind_speed, coldest_place, warmest_place, windiest_place,
-              cities, country, date)
+              county_weather)
 
 
 def weather(path: str, date: str = '2021-09-25', country: str = 'Spain') -> None:
-    cities: Dict[str, List[Dict[str, Decimal]]] = dict()
-    total_mean_temp_list: List[Decimal] = list()
-    total_max_temp_list: List[Decimal] = list()
-    total_min_temp_list: List[Decimal] = list()
-    total_max_wind_speed_list: List[Decimal] = list()
-    total_mean_wind_speed_list: List[Decimal] = list()
+    country_weather: CountryWeather = CountryWeather(country, date)
 
     for city in sorted(os.listdir(path)):
         temp_list: List[Decimal] = list()
@@ -89,27 +80,46 @@ def weather(path: str, date: str = '2021-09-25', country: str = 'Spain') -> None
                 temp_list.append(weather_hourly['temp'])
                 wind_speed_list.append(weather_hourly['wind_speed'])
 
+        country_weather.calculate_weather_info(temp_list, wind_speed_list)
+        city = city.replace(' ', '_')
+        country_weather.calculate_city_info(city, temp_list, wind_speed_list)
+
+    calculate_fields(country_weather)
+
+
+class CountryWeather:
+    def __init__(self, country: str, date: str):
+        self.country = country
+        self.date = date
+        self.total_mean_temp_list: List[Decimal] = list()
+        self.total_max_temp_list: List[Decimal] = list()
+        self.total_min_temp_list: List[Decimal] = list()
+        self.total_max_wind_speed_list: List[Decimal] = list()
+        self.total_mean_wind_speed_list: List[Decimal] = list()
+        self.cities: Dict[str, List[Dict[str, Decimal]]] = dict()
+
+    def calculate_weather_info(self, temp_list: List[Decimal], wind_speed_list: List[Decimal]):
+        self.total_min_temp_list.append(Decimal(min(temp_list)).quantize(Decimal('1.00')))
+        self.total_max_temp_list.append(Decimal(max(temp_list)).quantize(Decimal('1.00')))
+        self.total_mean_temp_list.append(Decimal(sum(temp_list) / len(temp_list)).quantize(Decimal('1.00')))
+
+        self.total_max_wind_speed_list.append(Decimal(max(wind_speed_list)).quantize(Decimal('1.00')))
+        self.total_mean_wind_speed_list.append(Decimal(sum(wind_speed_list) / len(wind_speed_list)).quantize(Decimal('1.00')))
+
+    def calculate_city_info(self, city_name: str, temp_list: List[Decimal], wind_speed_list: List[Decimal]):
         mean_temp: Decimal = Decimal(sum(temp_list) / len(temp_list)).quantize(Decimal('1.00'))
         mean_wind_speed: Decimal = Decimal(sum(wind_speed_list) / len(wind_speed_list)).quantize(Decimal('1.00'))
         min_temp: Decimal = Decimal(min(temp_list)).quantize(Decimal('1.00'))
         max_temp: Decimal = Decimal(max(temp_list)).quantize(Decimal('1.00'))
         min_wind_speed: Decimal = Decimal(min(wind_speed_list)).quantize(Decimal('1.00'))
         max_wind_speed: Decimal = Decimal(max(wind_speed_list)).quantize(Decimal('1.00'))
-        total_min_temp_list.append(min_temp)
-        total_max_temp_list.append(max_temp)
-        total_mean_temp_list.append(mean_temp)
-        total_max_wind_speed_list.append(max_wind_speed)
-        total_mean_wind_speed_list.append(mean_wind_speed)
-        city = city.replace(' ', '_')
-        cities[city] = list()
-        cities[city].append({'mean_temp': mean_temp})
-        cities[city].append({'mean_wind_speed': mean_wind_speed})
-        cities[city].append({'min_temp': min_temp})
-        cities[city].append({'min_wind_speed': min_wind_speed})
-        cities[city].append({'max_temp': max_temp})
-        cities[city].append({'max_wind_speed': max_wind_speed})
-
-    calculate_fields(total_mean_temp_list, total_mean_wind_speed_list, cities)
+        self.cities[city_name] = list()
+        self.cities[city_name].append({'mean_temp': mean_temp})
+        self.cities[city_name].append({'mean_wind_speed': mean_wind_speed})
+        self.cities[city_name].append({'min_temp': min_temp})
+        self.cities[city_name].append({'min_wind_speed': min_wind_speed})
+        self.cities[city_name].append({'max_temp': max_temp})
+        self.cities[city_name].append({'max_wind_speed': max_wind_speed})
 
 
 path_dir: str = os.environ.get('path')
